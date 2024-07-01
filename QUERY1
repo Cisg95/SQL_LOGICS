@@ -1,0 +1,93 @@
+SELECT DISTINCT
+    codigo_comercio
+    ,t1.MEDIO_PAGO
+    ,tipo_transaccion
+    ,t1.origen
+    ,CAST(LEFT(T1.mes,4) || '-' || RIGHT(T1.mes,2) || '-01' AS DATE) as mes
+    ,COMMERCE
+    ,COMERCIO
+    ,on_us
+    ,canal
+    ,mcc
+    ,t1.marca
+    ,t1.categoria
+    ,rubro
+    ,COUNT(1) over (partition by codigo_comercio,t1.MEDIO_PAGO,tipo_transaccion,t1.origen,CAST(LEFT(T1.mes,4) || '-' || RIGHT(T1.mes,2) || '-01' AS DATE),COMMERCE , COMERCIO,on_us,canal,mcc,t1.marca,t1.categoria,rubro) as conteo
+
+    ,COUNT(distinct ttx_num_pedido) over (partition by codigo_comercio,t1.MEDIO_PAGO,tipo_transaccion,t1.origen,CAST(LEFT(T1.mes,4) || '-' || RIGHT(T1.mes,2) || '-01' AS DATE),COMMERCE , COMERCIO,on_us,canal,mcc,t1.marca,t1.categoria,rubro) as trx_unicas
+
+    ,SUM(CAST(monto_venta AS NUMERIC)) over (partition by codigo_comercio,t1.MEDIO_PAGO,tipo_transaccion,t1.origen,CAST(LEFT(T1.mes,4) || '-' || RIGHT(T1.mes,2) || '-01' AS DATE),COMMERCE , COMERCIO,on_us,canal,mcc,t1.marca,t1.categoria,rubro) as monto_venta
+
+    ,SUM(CAST(monto_venta AS NUMERIC))  over (partition by codigo_comercio,t1.MEDIO_PAGO,tipo_transaccion,t1.origen,CAST(LEFT(T1.mes,4) || '-' || RIGHT(T1.mes,2) || '-01' AS DATE),COMMERCE , COMERCIO,on_us,canal,mcc,t1.marca,t1.categoria,rubro) / CASE WHEN T1.mes < "202307" THEN Count(1)  over (partition by codigo_comercio,t1.MEDIO_PAGO,tipo_transaccion,t1.origen,CAST(LEFT(T1.mes,4) || '-' || RIGHT(T1.mes,2) || '-01' AS DATE),COMMERCE , COMERCIO,on_us,canal,mcc,t1.marca,t1.categoria,rubro) ELSE COUNT(distinct ttx_num_pedido)  over (partition by codigo_comercio,t1.MEDIO_PAGO,tipo_transaccion,t1.origen,CAST(LEFT(T1.mes,4) || '-' || RIGHT(T1.mes,2) || '-01' AS DATE),COMMERCE , COMERCIO,on_us,canal,mcc,t1.marca,t1.categoria,rubro) END as ticket
+
+    ,SUM(CAST(monto_margen_adquirente AS NUMERIC)) over (partition by codigo_comercio,t1.MEDIO_PAGO,tipo_transaccion,t1.origen,CAST(LEFT(T1.mes,4) || '-' || RIGHT(T1.mes,2) || '-01' AS DATE),COMMERCE , COMERCIO,on_us,canal,mcc,t1.marca,t1.categoria,rubro) as monto_margen_adquirente
+
+    ,SUM(CAST(monto_costo_marca AS NUMERIC)) over (partition by codigo_comercio,t1.MEDIO_PAGO,tipo_transaccion,t1.origen,CAST(LEFT(T1.mes,4) || '-' || RIGHT(T1.mes,2) || '-01' AS DATE),COMMERCE , COMERCIO,on_us,canal,mcc,t1.marca,t1.categoria,rubro) as monto_cost_marca
+
+    ,SUM(CAST(monto_tasa_intercambio AS NUMERIC)) over (partition by codigo_comercio,t1.MEDIO_PAGO,tipo_transaccion,t1.origen,CAST(LEFT(T1.mes,4) || '-' || RIGHT(T1.mes,2) || '-01' AS DATE),COMMERCE , COMERCIO,on_us,canal,mcc,t1.marca,t1.categoria,rubro) as monto_tasa_intercambio
+
+    ,SUM(CAST(monto_mdr AS NUMERIC)) over (partition by codigo_comercio,t1.MEDIO_PAGO,tipo_transaccion,t1.origen,CAST(LEFT(T1.mes,4) || '-' || RIGHT(T1.mes,2) || '-01' AS DATE),COMMERCE , COMERCIO,on_us,canal,mcc,t1.marca,t1.categoria,rubro) as monto_mdr
+
+    ,SUM(CAST(monto_margen_adquirente AS NUMERIC))  over (partition by codigo_comercio,t1.MEDIO_PAGO,tipo_transaccion,t1.origen,CAST(LEFT(T1.mes,4) || '-' || RIGHT(T1.mes,2) || '-01' AS DATE),COMMERCE , COMERCIO,on_us,canal,mcc,t1.marca,t1.categoria,rubro) / SUM(CAST(monto_venta AS NUMERIC)) over (partition by codigo_comercio,t1.MEDIO_PAGO,tipo_transaccion,t1.origen,CAST(LEFT(T1.mes,4) || '-' || RIGHT(T1.mes,2) || '-01' AS DATE),COMMERCE , COMERCIO,on_us,canal,mcc,t1.marca,t1.categoria,rubro) as tasa_margen_adquirente
+
+    ,SUM(CAST(monto_costo_marca AS NUMERIC)) over (partition by codigo_comercio,t1.MEDIO_PAGO,tipo_transaccion,t1.origen,CAST(LEFT(T1.mes,4) || '-' || RIGHT(T1.mes,2) || '-01' AS DATE),COMMERCE , COMERCIO,on_us,canal,mcc,t1.marca,t1.categoria,rubro) / SUM(CAST(monto_venta AS NUMERIC)) over (partition by codigo_comercio,t1.MEDIO_PAGO,tipo_transaccion,t1.origen,CAST(LEFT(T1.mes,4) || '-' || RIGHT(T1.mes,2) || '-01' AS DATE),COMMERCE , COMERCIO,on_us,canal,mcc,t1.marca,t1.categoria,rubro) as tasa_costo_marca
+
+    ,SUM(CAST(monto_tasa_intercambio AS NUMERIC)) over (partition by codigo_comercio,t1.MEDIO_PAGO,tipo_transaccion,t1.origen,CAST(LEFT(T1.mes,4) || '-' || RIGHT(T1.mes,2) || '-01' AS DATE),COMMERCE , COMERCIO,on_us,canal,mcc,t1.marca,t1.categoria,rubro) / SUM(CAST (monto_venta AS NUMERIC)) over (partition by codigo_comercio,t1.MEDIO_PAGO,tipo_transaccion,t1.origen,CAST(LEFT(T1.mes,4) || '-' || RIGHT(T1.mes,2) || '-01' AS DATE),COMMERCE , COMERCIO,on_us,canal,mcc,t1.marca,t1.categoria,rubro) as tasa_intercambio
+
+    , case 
+        when CAST(LEFT(T1.mes,4) || '-' || RIGHT(T1.mes,2) || '-01' AS DATE) < DATE'2023-10-01' then T2.TI_T0
+        when CAST(LEFT(T1.mes,4) || '-' || RIGHT(T1.mes,2) || '-01' AS DATE) < DATE'2024-10-01' then T2.TI_T6
+        else TI_T18
+      end AS TASA_INTERCAMBIO_TEORICO
+    
+    , case 
+        when CAST(LEFT(T1.mes,4) || '-' || RIGHT(T1.mes,2) || '-01' AS DATE) < DATE'2023-10-01' then T2.TI_T0
+        when CAST(LEFT(T1.mes,4) || '-' || RIGHT(T1.mes,2) || '-01' AS DATE) < DATE'2024-10-01' then T2.TI_T6
+        else TI_T18
+      end * SUM(CAST(monto_venta AS NUMERIC)) over (partition by codigo_comercio,t1.MEDIO_PAGO,tipo_transaccion,t1.origen,CAST(LEFT(T1.mes,4) || '-' || RIGHT(T1.mes,2) || '-01' AS DATE),COMMERCE , COMERCIO,on_us,canal,mcc,t1.marca,t1.categoria,rubro) AS MONTO_TI_TEORICO
+
+    ,t3.VALOR_UF * t4.UF_TRX *
+    CASE 
+      WHEN TIPO_TRANSACCION = 'VENTA' THEN COUNT(1) over (partition by codigo_comercio,t1.MEDIO_PAGO,tipo_transaccion,t1.origen,CAST(LEFT(T1.mes,4) || '-' || RIGHT(T1.mes,2) || '-01' AS DATE),COMMERCE , COMERCIO,on_us,canal,mcc,t1.marca,t1.categoria,rubro)
+    END as MONTO_MA_TEORICO_VENTA
+    ,t3.VALOR_UF * t4.UF_TRX *
+    CASE 
+      WHEN TIPO_TRANSACCION = 'ANULACION' THEN COUNT(1) over (partition by codigo_comercio,t1.MEDIO_PAGO,tipo_transaccion,t1.origen,CAST(LEFT(T1.mes,4) || '-' || RIGHT(T1.mes,2) || '-01' AS DATE),COMMERCE , COMERCIO,on_us,canal,mcc,t1.marca,t1.categoria,rubro)
+    END as MONTO_MA_TEORICO_ANULACION
+    ,t4.UF_TRX
+FROM `XXXX.XXXX` t1
+
+left join 
+    (SELECT DISTINCT 
+      MEDIO_PAGO
+      ,ORIGEN
+      ,MARCA
+      ,CATEGORIA
+      ,Fantasy_name
+      ,TI_t0
+      ,TI_T6
+      ,TI_T18
+    FROM `YYYY.YYYY`) t2
+  on UPPER(t1.medio_pago) = t2.MEDIO_PAGO
+  AND UPPER(t1.ORIGEN) = t2.ORIGEN
+  AND UPPER(t1.MARCA) = UPPER(t2.MARCA)
+  AND IFNULL(UPPER(t1.CATEGORIA),'-') = IFNULL(UPPER(t2.CATEGORIA),'-')
+  AND UPPER(t1.FANTASY_NAME) = UPPER(t2.Fantasy_name)
+
+left join (SELECT DISTINCT 
+              DATE_TRUNC(FECHA, MONTH) AS FECHA
+              , AVG(VALOR_UF) OVER (PARTITION BY DATE_TRUNC(FECHA, MONTH)) AS VALOR_UF
+            FROM `ZZZZ.ZZZZ`
+            WHERE FECHA >= DATE_SUB(DATE_SUB(DATE_TRUNC(CURRENT_DATE('America/Santiago'), year), INTERVAL 1 YEAR), INTERVAL 2 MONTH) ) t3
+  on CAST(LEFT(T1.mes,4) || '-' || RIGHT(T1.mes,2) || '-01' AS DATE) = t3.FECHA
+
+left join `VVVV.VVVV` t4
+  on UPPER(t1.medio_pago) = t4.TIPO
+  and (
+    -- 20240327 CS: En caso de tener un nuevo valor [...] hablar con xxxxxxxxxxx para coordinar nueva regla
+      case 
+        when cast(t1.mes as int64) <= 202403 then 202403
+        else 202404
+      end) = t4.FECHA_LIMITE
+
+where CAST(LEFT(T1.mes,4) || '-' || RIGHT(T1.mes,2) || '-01' AS DATE) >= DATE_SUB(DATE_SUB(DATE_TRUNC(CURRENT_DATE('America/Santiago'), year), INTERVAL 1 YEAR), INTERVAL 2 MONTH) 
